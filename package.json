@@ -4,9 +4,13 @@
   "main": "main.js",
   "description": "DotCode GUI Advanced",
   "license": "MIT",
+  "private": true,
+  "engines": {
+    "node": ">=18 <21"
+  },
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder"
+    "dist": "electron-builder --win portable"
   },
   "dependencies": {
     "bwip-js": "^4.6.0",
@@ -28,11 +32,16 @@
       "renderer.js",
       "node_modules/**"
     ],
+    "asar": true,
+    "npmRebuild": false,
+    "buildDependenciesFromSource": false,
     "win": {
       "target": [
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "artifactName": "DotCodeGUI.exe"
