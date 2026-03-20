@@ -1,4 +1,4 @@
-name: Build Windows Portable EXE
+name: Build EXE
 
 on:
   workflow_dispatch:
@@ -11,29 +11,17 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-      - name: Setup Node.js 18
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 18
-          cache: npm
 
-      - name: Install dependencies
-        run: npm install
+      - run: npm install
 
-      - name: Rebuild native modules
-        run: npx electron-builder install-app-deps
+      - run: npm run dist
 
-      - name: Build portable executable
-        run: npm run dist
-
-      - name: Upload portable EXE
-        uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v6
         with:
-          name: DotCodeGUI_Windows_Portable
-          path: |
-            dist/*portable*.exe
-            dist/*.exe
-          if-no-files-found: error
+          name: DotCodeGUI
+          path: dist/*.exe
