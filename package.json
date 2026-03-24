@@ -1,9 +1,10 @@
 {
   "name": "dotcode-gui",
   "version": "1.0.0",
-  "main": "main.js",
   "description": "DotCode GUI Advanced",
+  "main": "main.js",
   "license": "MIT",
+  "author": "",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder"
@@ -21,18 +22,24 @@
   "build": {
     "appId": "com.dotcode.gui",
     "productName": "DotCodeGUI",
+    "directories": {
+      "output": "dist"
+    },
     "files": [
       "main.js",
       "preload.js",
       "index.html",
       "renderer.js",
-      "node_modules/**"
+      "package.json"
     ],
+    "asar": true,
     "win": {
       "target": [
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "artifactName": "DotCodeGUI.exe"
