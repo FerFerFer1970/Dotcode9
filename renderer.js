@@ -12,8 +12,10 @@ const repeatEl = el('repeatReplaceText');
 const fullGridEl = el('fillFullGrid');
 const showGridEl = el('showGrid');
 
-const outerRowsEl = el('outerRows');
-const outerColsEl = el('outerCols');
+const outerRowsTopEl = el('outerRowsTop');
+const outerRowsBottomEl = el('outerRowsBottom');
+const outerColsLeftEl = el('outerColsLeft');
+const outerColsRightEl = el('outerColsRight');
 const outerOnBaseEl = el('outerOnBase');
 
 const cellSizeMmEl = el('cellSizeMm');
@@ -22,6 +24,14 @@ const gridHeightMmEl = el('gridHeightMm');
 
 const dotOffsetXmmEl = el('dotOffsetXmm');
 const dotOffsetYmmEl = el('dotOffsetYmm');
+const dotTextOffsetXmmEl = el('dotTextOffsetXmm');
+const dotTextOffsetYmmEl = el('dotTextOffsetYmm');
+const emptyTextOffsetXmmEl = el('emptyTextOffsetXmm');
+const emptyTextOffsetYmmEl = el('emptyTextOffsetYmm');
+const dotImageOffsetXmmEl = el('dotImageOffsetXmm');
+const dotImageOffsetYmmEl = el('dotImageOffsetYmm');
+const emptyImageOffsetXmmEl = el('emptyImageOffsetXmm');
+const emptyImageOffsetYmmEl = el('emptyImageOffsetYmm');
 const dotDiameterRatioEl = el('dotDiameterRatio');
 
 const metricColsEl = el('metricCols');
@@ -34,10 +44,11 @@ const metricHeightPxEl = el('metricHeightPx');
 const scaleEl = el('scale');
 const paddingEl = el('padding');
 const finalSizeEl = el('finalSize');
+const outputDpiEl = el('outputDpi');
+const outputDpiMirrorEl = el('outputDpiMirror');
 
-const fontSizeEl = el('fontSize');
-const dotFontSizeEl = el('dotFontSize');
-const emptyFontSizeEl = el('emptyFontSize');
+const dotFontSizeMmEl = el('dotFontSizeMm');
+const emptyFontSizeMmEl = el('emptyFontSizeMm');
 
 const dotFontFamilyEl = el('dotFontFamily');
 const emptyFontFamilyEl = el('emptyFontFamily');
@@ -46,11 +57,15 @@ const useEmbeddedFontsEl = el('useEmbeddedFonts');
 const dotFontFileLabelEl = el('dotFontFileLabel');
 const emptyFontFileLabelEl = el('emptyFontFileLabel');
 
-const dotTextStrokeWidthEl = el('dotTextStrokeWidth');
-const emptyTextStrokeWidthEl = el('emptyTextStrokeWidth');
+const dotTextStrokeWidthMmEl = el('dotTextStrokeWidthMm');
+const emptyTextStrokeWidthMmEl = el('emptyTextStrokeWidthMm');
 const dotTextStrokeColorEl = el('dotTextStrokeColor');
 const emptyTextStrokeColorEl = el('emptyTextStrokeColor');
 const textStrokeJoinEl = el('textStrokeJoin');
+
+const showRulersEl = el('showRulers');
+const rulerStepMmEl = el('rulerStepMm');
+const rulerMajorTickMmEl = el('rulerMajorTickMm');
 
 const useImagesEl = el('useImages');
 const dotUseImageEl = el('dotUseImage');
@@ -71,8 +86,12 @@ const emptyImageLabelEl = el('emptyImageLabel');
 
 const includePayloadInFilenameEl = el('includePayloadInFilename');
 const printPayloadLegendEl = el('printPayloadLegend');
-const legendFontSizeEl = el('legendFontSize');
-const legendMarginEl = el('legendMargin');
+const legendFontSizeMmEl = el('legendFontSizeMm');
+const legendMarginMmEl = el('legendMarginMm');
+
+const enableLoupeEl = el('enableLoupe');
+const loupeZoomEl = el('loupeZoom');
+const loupeSizePxEl = el('loupeSizePx');
 
 const bgColorEl = el('bgColor');
 const dotColorEl = el('dotColor');
@@ -92,12 +111,14 @@ const sequenceSuffixEl = el('sequenceSuffix');
 const sequenceNumberStartEl = el('sequenceNumberStart');
 
 const outputFormatEl = el('outputFormat');
-const outputDpiEl = el('outputDpi');
 const outputPrefixEl = el('outputPrefix');
 
 const outDirEl = el('outDir');
 const statusEl = el('status');
 const frame = el('previewFrame');
+const previewBox = el('previewBox');
+const loupe = el('loupe');
+const loupeFrame = el('loupeFrame');
 
 const tabReplaced = el('tabReplaced');
 const tabBase = el('tabBase');
@@ -115,6 +136,13 @@ let emptyEmbeddedFont = null;
 function setStatus(msg) {
   statusEl.textContent = msg;
 }
+
+function syncDpiInputs(source, target) {
+  target.value = source.value;
+}
+
+outputDpiEl.addEventListener('input', () => syncDpiInputs(outputDpiEl, outputDpiMirrorEl));
+outputDpiMirrorEl.addEventListener('input', () => syncDpiInputs(outputDpiMirrorEl, outputDpiEl));
 
 function setTab(view) {
   activeView = view;
@@ -140,8 +168,10 @@ function getOpts() {
     fillFullGrid: fullGridEl.checked,
     showGrid: showGridEl.checked,
 
-    outerRows: outerRowsEl.value,
-    outerCols: outerColsEl.value,
+    outerRowsTop: outerRowsTopEl.value,
+    outerRowsBottom: outerRowsBottomEl.value,
+    outerColsLeft: outerColsLeftEl.value,
+    outerColsRight: outerColsRightEl.value,
     outerOnBase: outerOnBaseEl.checked,
 
     cellSizeMm: cellSizeMmEl.value,
@@ -150,15 +180,23 @@ function getOpts() {
 
     dotOffsetXmm: dotOffsetXmmEl.value,
     dotOffsetYmm: dotOffsetYmmEl.value,
+    dotTextOffsetXmm: dotTextOffsetXmmEl.value,
+    dotTextOffsetYmm: dotTextOffsetYmmEl.value,
+    emptyTextOffsetXmm: emptyTextOffsetXmmEl.value,
+    emptyTextOffsetYmm: emptyTextOffsetYmmEl.value,
+    dotImageOffsetXmm: dotImageOffsetXmmEl.value,
+    dotImageOffsetYmm: dotImageOffsetYmmEl.value,
+    emptyImageOffsetXmm: emptyImageOffsetXmmEl.value,
+    emptyImageOffsetYmm: emptyImageOffsetYmmEl.value,
     dotDiameterRatio: dotDiameterRatioEl.value,
 
     scale: scaleEl.value,
     padding: paddingEl.value,
     finalSize: finalSizeEl.value,
+    outputDpi: outputDpiEl.value,
 
-    fontSize: fontSizeEl.value,
-    dotFontSize: dotFontSizeEl.value,
-    emptyFontSize: emptyFontSizeEl.value,
+    dotFontSizeMm: dotFontSizeMmEl.value,
+    emptyFontSizeMm: emptyFontSizeMmEl.value,
 
     dotFontFamily: dotFontFamilyEl.value,
     emptyFontFamily: emptyFontFamilyEl.value,
@@ -167,11 +205,15 @@ function getOpts() {
     dotEmbeddedFont,
     emptyEmbeddedFont,
 
-    dotTextStrokeWidth: dotTextStrokeWidthEl.value,
-    emptyTextStrokeWidth: emptyTextStrokeWidthEl.value,
+    dotTextStrokeWidthMm: dotTextStrokeWidthMmEl.value,
+    emptyTextStrokeWidthMm: emptyTextStrokeWidthMmEl.value,
     dotTextStrokeColor: dotTextStrokeColorEl.value,
     emptyTextStrokeColor: emptyTextStrokeColorEl.value,
     textStrokeJoin: textStrokeJoinEl.value,
+
+    showRulers: showRulersEl.checked,
+    rulerStepMm: rulerStepMmEl.value,
+    rulerMajorTickMm: rulerMajorTickMmEl.value,
 
     useImages: useImagesEl.checked,
     dotUseImage: dotUseImageEl.checked,
@@ -189,8 +231,12 @@ function getOpts() {
 
     includePayloadInFilename: includePayloadInFilenameEl.checked,
     printPayloadLegend: printPayloadLegendEl.checked,
-    legendFontSize: legendFontSizeEl.value,
-    legendMargin: legendMarginEl.value,
+    legendFontSizeMm: legendFontSizeMmEl.value,
+    legendMarginMm: legendMarginMmEl.value,
+
+    enableLoupe: enableLoupeEl.checked,
+    loupeZoom: loupeZoomEl.value,
+    loupeSizePx: loupeSizePxEl.value,
 
     style: {
       bgColor: bgColorEl.value,
@@ -212,9 +258,14 @@ function getOpts() {
     sequenceNumberStart: sequenceNumberStartEl.value,
 
     outputFormat: outputFormatEl.value,
-    outputDpi: outputDpiEl.value,
     outputPrefix: outputPrefixEl.value,
   };
+}
+
+function applyLoupeStyle() {
+  const size = Math.max(80, Number(loupeSizePxEl.value) || 260);
+  loupe.style.width = `${size}px`;
+  loupe.style.height = `${size}px`;
 }
 
 function renderPreview() {
@@ -223,7 +274,9 @@ function renderPreview() {
 
   const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
   const url = URL.createObjectURL(blob);
+
   frame.src = url;
+  loupeFrame.src = url;
 
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
@@ -237,6 +290,44 @@ function updateMetrics(metrics) {
   metricWidthPxEl.textContent = String(Math.round(metrics.widthPx));
   metricHeightPxEl.textContent = String(Math.round(metrics.heightPx));
 }
+
+function updateLoupePosition(clientX, clientY) {
+  if (!enableLoupeEl.checked || activeView !== 'replaced') {
+    loupe.style.display = 'none';
+    return;
+  }
+
+  const rect = previewBox.getBoundingClientRect();
+  const localX = clientX - rect.left;
+  const localY = clientY - rect.top;
+
+  if (localX < 0 || localY < 0 || localX > rect.width || localY > rect.height) {
+    loupe.style.display = 'none';
+    return;
+  }
+
+  loupe.style.display = 'block';
+  applyLoupeStyle();
+
+  const zoom = Math.max(1, Number(loupeZoomEl.value) || 4);
+  const size = Math.max(80, Number(loupeSizePxEl.value) || 260);
+
+  const iframeWidth = previewBox.clientWidth;
+  const iframeHeight = previewBox.clientHeight;
+
+  loupeFrame.style.width = `${iframeWidth}px`;
+  loupeFrame.style.height = `${iframeHeight}px`;
+
+  const tx = -(localX * zoom - size / 2);
+  const ty = -(localY * zoom - size / 2);
+
+  loupeFrame.style.transform = `translate(${tx}px, ${ty}px) scale(${zoom})`;
+}
+
+previewBox.addEventListener('mousemove', (e) => updateLoupePosition(e.clientX, e.clientY));
+previewBox.addEventListener('mouseleave', () => {
+  loupe.style.display = 'none';
+});
 
 let t = null;
 function refreshPreviewDebounced() {
@@ -268,32 +359,46 @@ async function refreshPreviewNow() {
       emptyCellText: emptyEl,
       singleGridText: singleTextEl,
 
-      outerRows: outerRowsEl,
-      outerCols: outerColsEl,
+      outerRowsTop: outerRowsTopEl,
+      outerRowsBottom: outerRowsBottomEl,
+      outerColsLeft: outerColsLeftEl,
+      outerColsRight: outerColsRightEl,
 
       cellSizeMm: cellSizeMmEl,
       gridWidthMm: gridWidthMmEl,
       gridHeightMm: gridHeightMmEl,
+
       dotOffsetXmm: dotOffsetXmmEl,
       dotOffsetYmm: dotOffsetYmmEl,
+      dotTextOffsetXmm: dotTextOffsetXmmEl,
+      dotTextOffsetYmm: dotTextOffsetYmmEl,
+      emptyTextOffsetXmm: emptyTextOffsetXmmEl,
+      emptyTextOffsetYmm: emptyTextOffsetYmmEl,
+      dotImageOffsetXmm: dotImageOffsetXmmEl,
+      dotImageOffsetYmm: dotImageOffsetYmmEl,
+      emptyImageOffsetXmm: emptyImageOffsetXmmEl,
+      emptyImageOffsetYmm: emptyImageOffsetYmmEl,
       dotDiameterRatio: dotDiameterRatioEl,
 
       scale: scaleEl,
       padding: paddingEl,
       finalSize: finalSizeEl,
+      outputDpi: outputDpiEl,
 
-      fontSize: fontSizeEl,
-      dotFontSize: dotFontSizeEl,
-      emptyFontSize: emptyFontSizeEl,
+      dotFontSizeMm: dotFontSizeMmEl,
+      emptyFontSizeMm: emptyFontSizeMmEl,
 
       dotFontFamily: dotFontFamilyEl,
       emptyFontFamily: emptyFontFamilyEl,
 
-      dotTextStrokeWidth: dotTextStrokeWidthEl,
-      emptyTextStrokeWidth: emptyTextStrokeWidthEl,
+      dotTextStrokeWidthMm: dotTextStrokeWidthMmEl,
+      emptyTextStrokeWidthMm: emptyTextStrokeWidthMmEl,
       dotTextStrokeColor: dotTextStrokeColorEl,
       emptyTextStrokeColor: emptyTextStrokeColorEl,
       textStrokeJoin: textStrokeJoinEl,
+
+      rulerStepMm: rulerStepMmEl,
+      rulerMajorTickMm: rulerMajorTickMmEl,
 
       dotImageScale: dotImageScaleEl,
       emptyImageScale: emptyImageScaleEl,
@@ -304,8 +409,11 @@ async function refreshPreviewNow() {
       dotImageOpacity: dotImageOpacityEl,
       emptyImageOpacity: emptyImageOpacityEl,
 
-      legendFontSize: legendFontSizeEl,
-      legendMargin: legendMarginEl,
+      legendFontSizeMm: legendFontSizeMmEl,
+      legendMarginMm: legendMarginMmEl,
+
+      loupeZoom: loupeZoomEl,
+      loupeSizePx: loupeSizePxEl,
 
       sequenceStrategy: sequenceStrategyEl,
       sequenceStart: sequenceStartEl,
@@ -319,7 +427,6 @@ async function refreshPreviewNow() {
       sequenceNumberStart: sequenceNumberStartEl,
 
       outputFormat: outputFormatEl,
-      outputDpi: outputDpiEl,
       outputPrefix: outputPrefixEl,
     };
 
@@ -328,6 +435,8 @@ async function refreshPreviewNow() {
         map[k].value = v;
       }
     }
+
+    outputDpiMirrorEl.value = outputDpiEl.value;
 
     useGs1El.checked = !!saved.useGs1;
     repeatEl.checked = saved.repeatReplaceText !== false;
@@ -343,6 +452,8 @@ async function refreshPreviewNow() {
     dotFontFileLabelEl.textContent = dotEmbeddedFont?.name ?? '(ninguna)';
     emptyFontFileLabelEl.textContent = emptyEmbeddedFont?.name ?? '(ninguna)';
 
+    showRulersEl.checked = !!saved.showRulers;
+
     useImagesEl.checked = !!saved.useImages;
     dotUseImageEl.checked = saved.dotUseImage !== false;
     emptyUseImageEl.checked = saved.emptyUseImage !== false;
@@ -354,6 +465,7 @@ async function refreshPreviewNow() {
     includePayloadInFilenameEl.checked = saved.includePayloadInFilename !== false;
     printPayloadLegendEl.checked = !!saved.printPayloadLegend;
 
+    enableLoupeEl.checked = !!saved.enableLoupe;
     sequenceModeEl.checked = !!saved.sequenceMode;
 
     if (saved.style) {
@@ -364,26 +476,35 @@ async function refreshPreviewNow() {
     }
   }
 
+  applyLoupeStyle();
   await refreshPreviewNow();
 })();
 
 const watchedIds = [
   'payload', 'replaceText', 'emptyCellText', 'singleGridText',
   'useGs1', 'repeatReplaceText', 'fillFullGrid', 'showGrid', 'singleGridTextMode',
-  'outerRows', 'outerCols', 'outerOnBase',
+  'outerRowsTop', 'outerRowsBottom', 'outerColsLeft', 'outerColsRight', 'outerOnBase',
   'cellSizeMm', 'gridWidthMm', 'gridHeightMm',
-  'dotOffsetXmm', 'dotOffsetYmm', 'dotDiameterRatio',
-  'scale', 'padding', 'finalSize', 'fontSize', 'dotFontSize', 'emptyFontSize',
+  'dotOffsetXmm', 'dotOffsetYmm',
+  'dotTextOffsetXmm', 'dotTextOffsetYmm',
+  'emptyTextOffsetXmm', 'emptyTextOffsetYmm',
+  'dotImageOffsetXmm', 'dotImageOffsetYmm',
+  'emptyImageOffsetXmm', 'emptyImageOffsetYmm',
+  'dotDiameterRatio',
+  'scale', 'padding', 'finalSize', 'outputDpi', 'outputDpiMirror',
+  'dotFontSizeMm', 'emptyFontSizeMm',
   'dotFontFamily', 'emptyFontFamily', 'useEmbeddedFonts',
-  'dotTextStrokeWidth', 'emptyTextStrokeWidth', 'dotTextStrokeColor', 'emptyTextStrokeColor', 'textStrokeJoin',
+  'dotTextStrokeWidthMm', 'emptyTextStrokeWidthMm', 'dotTextStrokeColor', 'emptyTextStrokeColor', 'textStrokeJoin',
+  'showRulers', 'rulerStepMm', 'rulerMajorTickMm',
   'useImages', 'dotUseImage', 'emptyUseImage',
   'dotImageScale', 'emptyImageScale', 'dotImageFit', 'emptyImageFit',
   'dotImageRotate', 'emptyImageRotate', 'dotImageOpacity', 'emptyImageOpacity',
-  'includePayloadInFilename', 'printPayloadLegend', 'legendFontSize', 'legendMargin',
+  'includePayloadInFilename', 'printPayloadLegend', 'legendFontSizeMm', 'legendMarginMm',
+  'enableLoupe', 'loupeZoom', 'loupeSizePx',
   'bgColor', 'dotColor', 'emptyColor', 'gridColor',
   'sequenceMode', 'sequenceStrategy', 'sequenceStart', 'sequenceCount', 'sequenceStep',
   'sequenceWidth', 'sequenceSliceStart', 'sequenceSliceLength', 'sequencePrefix', 'sequenceSuffix', 'sequenceNumberStart',
-  'outputFormat', 'outputDpi', 'outputPrefix'
+  'outputFormat', 'outputPrefix'
 ];
 
 for (const id of watchedIds) {

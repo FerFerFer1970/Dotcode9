@@ -6,7 +6,7 @@
   <title>DotCodeGUI Advanced</title>
   <style>
     body { font-family: system-ui, Arial; margin: 16px; }
-    .app { display:grid; grid-template-columns: 560px 1fr; gap: 14px; }
+    .app { display:grid; grid-template-columns: 640px 1fr; gap: 14px; }
     .panel { border:1px solid #ddd; border-radius: 12px; padding: 12px; overflow:auto; max-height: calc(100vh - 40px); }
     .row { margin: 10px 0; }
     label { display:block; margin-bottom: 6px; font-weight: 600; }
@@ -21,9 +21,31 @@
     .tabs { display:flex; border-bottom:1px solid #ddd; }
     .tab { flex:1; padding: 10px; cursor:pointer; text-align:center; background:#fafafa; }
     .tab.active { background:white; font-weight:700; }
-    .preview { width:100%; height: calc(100vh - 80px); background:#fff; }
+    .previewBox { position:relative; width:100%; height: calc(100vh - 80px); background:#fff; overflow:hidden; }
+    .preview { width:100%; height:100%; background:#fff; border:0; }
+    .loupe {
+      position:absolute;
+      right:12px;
+      bottom:12px;
+      width:260px;
+      height:260px;
+      border:2px solid #333;
+      border-radius:12px;
+      background:#fff;
+      overflow:hidden;
+      display:none;
+      z-index:10;
+      box-shadow:0 8px 24px rgba(0,0,0,.2);
+    }
+    .loupe iframe {
+      position:absolute;
+      border:0;
+      transform-origin: top left;
+      pointer-events:none;
+    }
     .twoCol { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
     .threeCol { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
+    .fourCol { display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px; }
     .chip { display:flex; align-items:center; gap:8px; }
     .hr { height:1px; background:#eee; margin: 12px 0; }
     .metrics {
@@ -39,7 +61,7 @@
     .metrics div span {
       color:#666;
       display:inline-block;
-      min-width:130px;
+      min-width:150px;
     }
   </style>
 </head>
@@ -85,65 +107,102 @@
 
       <div class="row">
         <label>Marco exterior de no-dots</label>
-        <div class="threeCol">
+        <div class="fourCol">
           <div>
-            <div class="muted">Filas arriba/abajo</div>
-            <input id="outerRows" type="number" value="5" min="0" max="100" />
+            <div class="muted">Filas arriba</div>
+            <input id="outerRowsTop" type="number" value="5" min="0" max="100" />
           </div>
           <div>
-            <div class="muted">Columnas izquierda/derecha</div>
-            <input id="outerCols" type="number" value="5" min="0" max="100" />
+            <div class="muted">Filas abajo</div>
+            <input id="outerRowsBottom" type="number" value="5" min="0" max="100" />
           </div>
           <div>
-            <div class="muted">Aplicar también al base</div>
-            <label class="chip" style="margin-top:10px;"><input id="outerOnBase" type="checkbox" checked /> Sí</label>
+            <div class="muted">Columnas izquierda</div>
+            <input id="outerColsLeft" type="number" value="5" min="0" max="100" />
           </div>
+          <div>
+            <div class="muted">Columnas derecha</div>
+            <input id="outerColsRight" type="number" value="5" min="0" max="100" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:8px;">
+          <label class="chip"><input id="outerOnBase" type="checkbox" checked /> Aplicar también al base</label>
         </div>
       </div>
 
       <div class="row">
         <label>Geometría física de la cuadrícula</label>
-
         <div class="threeCol">
           <div>
             <div class="muted">Tamaño de celda (mm)</div>
-            <input id="cellSizeMm" type="number" value="1.0" min="0.01" max="50" step="0.01" />
+            <input id="cellSizeMm" type="number" value="1.00" min="0.01" max="50" step="0.01" />
           </div>
           <div>
             <div class="muted">Ancho total cuadrícula (mm)</div>
-            <input id="gridWidthMm" type="number" value="0" min="0" max="1000" step="0.01" />
+            <input id="gridWidthMm" type="number" value="0.00" min="0" max="1000" step="0.01" />
           </div>
           <div>
             <div class="muted">Alto total cuadrícula (mm)</div>
-            <input id="gridHeightMm" type="number" value="0" min="0" max="1000" step="0.01" />
+            <input id="gridHeightMm" type="number" value="0.00" min="0" max="1000" step="0.01" />
           </div>
         </div>
-
         <div class="muted" style="margin-top:6px;">
           Si ancho/alto total son 0, se usan filas/columnas × tamaño de celda.
         </div>
       </div>
 
       <div class="row">
-        <label>Desplazamiento de dots dentro de la celda</label>
-
-        <div class="threeCol">
+        <label>Desplazamiento independiente dentro de celda (mm)</label>
+        <div class="fourCol">
           <div>
-            <div class="muted">Offset X dot (mm)</div>
-            <input id="dotOffsetXmm" type="number" value="0" min="-50" max="50" step="0.01" />
+            <div class="muted">Dots X</div>
+            <input id="dotOffsetXmm" type="number" value="0.00" min="-50" max="50" step="0.01" />
           </div>
           <div>
-            <div class="muted">Offset Y dot (mm)</div>
-            <input id="dotOffsetYmm" type="number" value="0" min="-50" max="50" step="0.01" />
+            <div class="muted">Dots Y</div>
+            <input id="dotOffsetYmm" type="number" value="0.00" min="-50" max="50" step="0.01" />
+          </div>
+          <div>
+            <div class="muted">Texto dots X</div>
+            <input id="dotTextOffsetXmm" type="number" value="0.00" min="-50" max="50" step="0.01" />
+          </div>
+          <div>
+            <div class="muted">Texto dots Y</div>
+            <input id="dotTextOffsetYmm" type="number" value="0.00" min="-50" max="50" step="0.01" />
+          </div>
+        </div>
+        <div class="fourCol" style="margin-top:10px;">
+          <div>
+            <div class="muted">Texto vacíos X</div>
+            <input id="emptyTextOffsetXmm" type="number" value="0.00" min="-50" max="50" step="0.01" />
+          </div>
+          <div>
+            <div class="muted">Texto vacíos Y</div>
+            <input id="emptyTextOffsetYmm" type="number" value="0.00" min="-50" max="50" step="0.01" />
+          </div>
+          <div>
+            <div class="muted">Imagen dots X</div>
+            <input id="dotImageOffsetXmm" type="number" value="0.00" min="-50" max="50" step="0.01" />
+          </div>
+          <div>
+            <div class="muted">Imagen dots Y</div>
+            <input id="dotImageOffsetYmm" type="number" value="0.00" min="-50" max="50" step="0.01" />
+          </div>
+        </div>
+        <div class="fourCol" style="margin-top:10px;">
+          <div>
+            <div class="muted">Imagen vacíos X</div>
+            <input id="emptyImageOffsetXmm" type="number" value="0.00" min="-50" max="50" step="0.01" />
+          </div>
+          <div>
+            <div class="muted">Imagen vacíos Y</div>
+            <input id="emptyImageOffsetYmm" type="number" value="0.00" min="-50" max="50" step="0.01" />
           </div>
           <div>
             <div class="muted">Diámetro dot (fracción celda)</div>
             <input id="dotDiameterRatio" type="number" value="0.75" min="0.05" max="1.5" step="0.01" />
           </div>
-        </div>
-
-        <div class="muted" style="margin-top:6px;">
-          0,0 = centro de la celda. Valores positivos desplazan a derecha/abajo.
+          <div></div>
         </div>
       </div>
 
@@ -173,31 +232,36 @@
         </div>
         <div class="twoCol" style="margin-top:10px;">
           <div>
-            <div class="muted">Tamaño final (px)</div>
+            <div class="muted">Tamaño final preview (px)</div>
             <input id="finalSize" type="number" value="300" min="100" max="3000" />
           </div>
           <div>
-            <div class="muted">Font-size general</div>
-            <input id="fontSize" type="number" value="5" min="1" max="80" />
-          </div>
-        </div>
-        <div class="twoCol" style="margin-top:10px;">
-          <div>
-            <div class="muted">Font-size en dots</div>
-            <input id="dotFontSize" type="number" value="5" min="1" max="80" />
-          </div>
-          <div>
-            <div class="muted">Font-size en no-dots</div>
-            <input id="emptyFontSize" type="number" value="4" min="1" max="80" />
+            <div class="muted">Resolución salida (dpi)</div>
+            <input id="outputDpi" type="number" value="300" min="72" max="2400" />
           </div>
         </div>
       </div>
 
-      <div class="hr"></div>
+      <div class="row">
+        <label>Texto en mm</label>
+        <div class="twoCol">
+          <div>
+            <div class="muted">Tamaño texto dots (mm)</div>
+            <input id="dotFontSizeMm" type="number" value="0.80" min="0.01" max="50" step="0.01" />
+          </div>
+          <div>
+            <div class="muted">Tamaño texto no-dots (mm)</div>
+            <input id="emptyFontSizeMm" type="number" value="0.70" min="0.01" max="50" step="0.01" />
+          </div>
+        </div>
+      </div>
 
       <div class="row">
-        <label>Fuentes del sistema</label>
-        <div class="twoCol">
+        <label>Fuentes</label>
+        <div class="inline">
+          <label class="chip"><input id="useEmbeddedFonts" type="checkbox" /> Exportar fuentes embebidas</label>
+        </div>
+        <div class="twoCol" style="margin-top:10px;">
           <div>
             <div class="muted">Fuente dots</div>
             <select id="dotFontFamily">
@@ -221,13 +285,6 @@
             </select>
           </div>
         </div>
-      </div>
-
-      <div class="row">
-        <label>Fuentes embebidas</label>
-        <div class="inline">
-          <label class="chip"><input id="useEmbeddedFonts" type="checkbox" /> Usar fuentes embebidas</label>
-        </div>
         <div class="twoCol" style="margin-top:10px;">
           <div>
             <button class="btn" id="chooseDotFontFile">Elegir fuente dots…</button>
@@ -241,15 +298,15 @@
       </div>
 
       <div class="row">
-        <label>Contorno del texto</label>
+        <label>Contorno del texto en mm</label>
         <div class="threeCol">
           <div>
-            <div class="muted">Stroke dots</div>
-            <input id="dotTextStrokeWidth" type="number" value="0" min="0" max="10" step="0.1" />
+            <div class="muted">Stroke dots (mm)</div>
+            <input id="dotTextStrokeWidthMm" type="number" value="0.00" min="0" max="10" step="0.01" />
           </div>
           <div>
-            <div class="muted">Stroke no-dots</div>
-            <input id="emptyTextStrokeWidth" type="number" value="0" min="0" max="10" step="0.1" />
+            <div class="muted">Stroke no-dots (mm)</div>
+            <input id="emptyTextStrokeWidthMm" type="number" value="0.00" min="0" max="10" step="0.01" />
           </div>
           <div>
             <div class="muted">Join</div>
@@ -266,7 +323,22 @@
         </div>
       </div>
 
-      <div class="hr"></div>
+      <div class="row">
+        <label>Reglas de medición</label>
+        <div class="inline">
+          <label class="chip"><input id="showRulers" type="checkbox" /> Mostrar reglas mm</label>
+        </div>
+        <div class="twoCol" style="margin-top:10px;">
+          <div>
+            <div class="muted">Paso marcas (mm)</div>
+            <input id="rulerStepMm" type="number" value="1.00" min="0.10" max="100" step="0.01" />
+          </div>
+          <div>
+            <div class="muted">Longitud marca mayor (mm)</div>
+            <input id="rulerMajorTickMm" type="number" value="1.50" min="0.10" max="20" step="0.01" />
+          </div>
+        </div>
+      </div>
 
       <div class="row">
         <label>Imágenes en lugar de texto</label>
@@ -338,8 +410,6 @@
         </div>
       </div>
 
-      <div class="hr"></div>
-
       <div class="row">
         <label>Leyenda / nombres</label>
         <div class="inline">
@@ -348,12 +418,29 @@
         </div>
         <div class="twoCol" style="margin-top:10px;">
           <div>
-            <div class="muted">Tamaño leyenda</div>
-            <input id="legendFontSize" type="number" value="14" min="4" max="72" />
+            <div class="muted">Tamaño leyenda (mm)</div>
+            <input id="legendFontSizeMm" type="number" value="3.50" min="0.10" max="50" step="0.01" />
           </div>
           <div>
-            <div class="muted">Margen leyenda (px)</div>
-            <input id="legendMargin" type="number" value="12" min="0" max="200" />
+            <div class="muted">Margen leyenda (mm)</div>
+            <input id="legendMarginMm" type="number" value="3.00" min="0" max="50" step="0.01" />
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>Lupa</label>
+        <div class="threeCol">
+          <div>
+            <label class="chip"><input id="enableLoupe" type="checkbox" /> Activar lupa</label>
+          </div>
+          <div>
+            <div class="muted">Zoom lupa</div>
+            <input id="loupeZoom" type="number" value="4" min="1" max="20" step="0.1" />
+          </div>
+          <div>
+            <div class="muted">Tamaño lupa (px)</div>
+            <input id="loupeSizePx" type="number" value="260" min="80" max="800" step="1" />
           </div>
         </div>
       </div>
@@ -447,7 +534,7 @@
           </div>
           <div>
             <div class="muted">Resolución (dpi)</div>
-            <input id="outputDpi" type="number" value="300" min="72" max="2400" />
+            <input id="outputDpiMirror" type="number" value="300" min="72" max="2400" />
           </div>
           <div>
             <div class="muted">Prefijo archivo</div>
@@ -476,7 +563,12 @@
         <div class="tab active" id="tabReplaced">Reemplazado</div>
         <div class="tab" id="tabBase">DotCode</div>
       </div>
-      <iframe class="preview" id="previewFrame"></iframe>
+      <div class="previewBox" id="previewBox">
+        <iframe class="preview" id="previewFrame"></iframe>
+        <div class="loupe" id="loupe">
+          <iframe id="loupeFrame"></iframe>
+        </div>
+      </div>
     </div>
   </div>
 
