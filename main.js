@@ -23,12 +23,24 @@ function mmToPx(mm, dpi) {
   return (Number(mm) / 25.4) * Number(dpi);
 }
 
-function forceSvgSize(svg, sizePx) {
-  const size = Number(sizePx);
-  if (!Number.isFinite(size) || size <= 0) return svg;
-  let out = svg.replace(/\swidth="[^"]*"/, '').replace(/\sheight="[^"]*"/, '');
-  out = out.replace(/<svg\b/, `<svg width="${size}" height="${size}"`);
+function setSvgSize(svg, width, height, unit = '') {
+  let out = svg
+    .replace(/\swidth="[^"]*"/g, '')
+    .replace(/\sheight="[^"]*"/g, '');
+
+  out = out.replace(
+    /<svg\b/,
+    `<svg width="${width}${unit}" height="${height}${unit}"`
+  );
+
   return out;
+}
+
+function setSvgViewBox(svg, x, y, w, h) {
+  if (/viewBox="[^"]*"/.test(svg)) {
+    return svg.replace(/viewBox="[^"]*"/, `viewBox="${x} ${y} ${w} ${h}"`);
+  }
+  return svg.replace(/<svg\b/, `<svg viewBox="${x} ${y} ${w} ${h}"`);
 }
 
 function getUserDataFile() {
@@ -53,28 +65,32 @@ function saveSettingsSafe(obj) {
 
 function generateBaseSvg(opts) {
   const { payload, useGs1, scale, padding, finalSize } = opts;
+
   const baseSvgRaw = bwipjs.toSVG({
     bcid: useGs1 ? 'gs1dotcode' : 'dotcode',
     text: String(payload ?? '').trim(),
     scale: Number(scale) || 4,
     padding: Number(padding) || 10,
   });
-  return forceSvgSize(baseSvgRaw, finalSize);
+
+  return setSvgSize(baseSvgRaw, Number(finalSize) || 300, Number(finalSize) || 300, '');
 }
 
 function extractGridFromBaseSvg(baseSvg) {
   const dMatch = baseSvg.match(/<path[^>]*\sd="([^"]+)"[^>]*\/>/);
   if (!dMatch) throw new Error('No se encontró <path d="..."/> en el SVG base.');
-  const d = dMatch[1];
 
+  const d = dMatch[1];
   const re = /M\s*([0-9.]+)\s*([0-9.]+)\s*C/g;
   const dots = [];
   let m;
+
   while ((m = re.exec(d)) !== null) {
     const xLeft = parseFloat(m[1]);
     const y = parseFloat(m[2]);
     dots.push({ x: xLeft + DOT_RADIUS, y });
   }
+
   if (!dots.length) throw new Error('No se detectaron dots en el símbolo.');
 
   const xs = [...new Set(dots.map(p => p.x))].sort((a, b) => a - b);
@@ -227,11 +243,9 @@ function addOuterFrameToBaseSvg(baseSvg, opts) {
 
   overlay += `</g>`;
 
-  let out = baseSvg
-    .replace(/viewBox="[^"]*"/, `viewBox="0 0 ${physical.widthMm} ${physical.heightMm}"`)
-    .replace(/<path[^>]*\/>/, overlay);
-
-  out = out.replace(/<svg\b/, `<svg width="${physical.widthMm}mm" height="${physical.heightMm}mm"`);
+  let out = baseSvg.replace(/<path[^>]*\/>/, overlay);
+  out = setSvgViewBox(out, 0, 0, physical.widthMm, physical.heightMm);
+  out = setSvgSize(out, physical.widthMm, physical.heightMm, 'mm');
   return out;
 }
 
@@ -326,8 +340,8 @@ function buildReplacedSvgAdvanced(baseSvg, opts) {
   }
 
   let svgWithFonts = injectDefsAndStyle(baseSvg, css);
-  svgWithFonts = svgWithFonts.replace(/viewBox="[^"]*"/, `viewBox="0 0 ${physical.widthMm} ${physical.heightMm}"`);
-  svgWithFonts = svgWithFonts.replace(/<svg\b/, `<svg width="${physical.widthMm}mm" height="${physical.heightMm}mm"`);
+  svgWithFonts = setSvgViewBox(svgWithFonts, 0, 0, physical.widthMm, physical.heightMm);
+  svgWithFonts = setSvgSize(svgWithFonts, physical.widthMm, physical.heightMm, 'mm');
 
   let overlay = `<rect x="0" y="0" width="${physical.widthMm}" height="${physical.heightMm}" fill="${bgColor}"/>`;
 
@@ -429,7 +443,7 @@ function addLegendToSvg(svg, payload, opts) {
   const [x, y, w, h] = vb[1].split(/\s+/).map(Number);
   const extraH = (legendFontSize * 0.3528) + (legendMargin * 0.3528 * 2);
 
-  svg = svg.replace(/viewBox="[^"]*"/, `viewBox="${x} ${y} ${w} ${h + extraH}"`);
+  svg = setSvgViewBox(svg, x, y, w, h + extraH);
 
   const legendY = y + h + (legendMargin * 0.3528) + (legendFontSize * 0.3528 * 0.8);
   const legendX = x + w / 2;
